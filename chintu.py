@@ -2,7 +2,8 @@ import speech_recognition as sr
 import pyttsx3
 import webbrowser
 import datetime
-import threading
+import time
+import requests
 
 # Initialize recognizer and TTS engine
 r = sr.Recognizer()
@@ -44,13 +45,25 @@ def tell_time(_=None):
     speak(f"The time is {current_time}.")
 
 def news(_=None):
-    speak("The current news is that the college is having winter vacations.")
-    speak("Arpit created a voice assistant like Jarvis named Chintu.")
+    try:
+        # Example using NewsAPI (you need a free API key from https://newsapi.org)
+        url = "https://newsapi.org/v2/top-headlines?country=in&apiKey=YOUR_API_KEY"
+        response = requests.get(url)
+        data = response.json()
+        if "articles" in data:
+            headlines = [article["title"] for article in data["articles"][:3]]
+            for h in headlines:
+                speak(h)
+        else:
+            speak("Sorry, I could not fetch the latest news.")
+    except Exception as e:
+        speak("There was an error fetching the news.")
 
 def call(command):
     contact_name = command.replace("call", "").strip()
     if contact_name:
-        speak(f"Calling {contact_name}.")
+        speak(f"Calling {contact_name}...")
+        # Simulated call – replace with Twilio/Skype/WhatsApp API for real calls
         speak("Sorry, the person is not responding.")
     else:
         speak("Please specify who to call.")
@@ -74,12 +87,10 @@ commands = {
     "music": play_music
 }
 
-# Listen for commands
-def listen_command():
-    with sr.Microphone() as source:
-        r.adjust_for_ambient_noise(source)
-        audio = r.listen(source)
+# Listen for speech
+def listen(source):
     try:
+        audio = r.listen(source)
         command = r.recognize_google(audio).lower()
         print("You said:", command)
         return command
@@ -91,34 +102,38 @@ def listen_command():
 
 # Main loop
 def main():
-    while True:
-        print("Listening for wake word...")
-        command = listen_command()
-        if wake_word in command:
-            speak("Yes sir?")
-            command = listen_command()
+    with sr.Microphone() as source:
+        r.adjust_for_ambient_noise(source, duration=1)
+        speak("Chintu is online and listening...")
 
-            if not command:
-                continue
+        while True:
+            print("Listening for wake word...")
+            command = listen(source)
 
-            # Match command keywords
-            matched = False
-            for keyword, func in commands.items():
-                if keyword in command:
-                    func(command)
-                    matched = True
-                    break
+            if wake_word in command:
+                speak("Bolo Sir ji")  # Changed response here
+                time.sleep(1)  # short pause so you can speak
 
-            if not matched:
-                if "hello" in command:
-                    speak("Hello! How can I assist you today?")
-                elif "exit" in command or "stop" in command:
-                    speak("Goodbye!")
-                    break
-                else:
-                    speak("I'm sorry, I didn't understand that.")
+                command = listen(source)
+
+                if not command:
+                    continue
+
+                matched = False
+                for keyword, func in commands.items():
+                    if keyword in command:
+                        func(command)
+                        matched = True
+                        break
+
+                if not matched:
+                    if "hello" in command:
+                        speak("Hello! How can I assist you today?")
+                    elif "exit" in command or "stop" in command:
+                        speak("Goodbye!")
+                        break
+                    else:
+                        speak("I'm sorry, I didn't understand that.")
 
 if __name__ == "__main__":
-    # Run in a separate thread to avoid blocking
-    assistant_thread = threading.Thread(target=main)
-    assistant_thread.start()
+    main()
