@@ -42,11 +42,11 @@ def open_website(command):
 
 def tell_time(_=None):
     current_time = datetime.datetime.now().strftime("%I:%M %p")
-    speak(f"The time is {current_time}.")
+    speak(f"Samay hai {current_time}.")
 
 def news(_=None):
     try:
-        # Example using NewsAPI (you need a free API key from https://newsapi.org)
+        # Example using NewsAPI (replace YOUR_API_KEY with your key from https://newsapi.org)
         url = "https://newsapi.org/v2/top-headlines?country=in&apiKey=YOUR_API_KEY"
         response = requests.get(url)
         data = response.json()
@@ -56,14 +56,14 @@ def news(_=None):
                 speak(h)
         else:
             speak("Sorry, I could not fetch the latest news.")
-    except Exception as e:
+    except Exception:
         speak("There was an error fetching the news.")
 
 def call(command):
     contact_name = command.replace("call", "").strip()
     if contact_name:
-        speak(f"Calling {contact_name}...")
-        # Simulated call – replace with Twilio/Skype/WhatsApp API for real calls
+        speak(f"{contact_name} ko call kar raha hoon...")
+        # Simulated call – integrate Twilio/Skype/WhatsApp API for real calls
         speak("Sorry, the person is not responding.")
     else:
         speak("Please specify who to call.")
@@ -78,11 +78,11 @@ def play_music(command):
         speak("Playing default music.")
         webbrowser.open("https://youtube.com/shorts/HYqTLO0bhnE?si=6Ll60-ql765OBkn6")
 
-# Command registry
+# Command registry with Hindi phrases
 commands = {
     "open": open_website,
-    "time": tell_time,
-    "news": news,
+    "time batao": tell_time,
+    "news batao": news,
     "call": call,
     "music": play_music
 }
@@ -111,7 +111,7 @@ def main():
             command = listen(source)
 
             if wake_word in command:
-                speak("Bolo Sir ji")  # Changed response here
+                speak("Bolo Sir ji")  # Changed response
                 time.sleep(1)  # short pause so you can speak
 
                 command = listen(source)
@@ -129,8 +129,8 @@ def main():
                 if not matched:
                     if "hello" in command:
                         speak("Hello! How can I assist you today?")
-                    elif "exit" in command or "stop" in command:
-                        speak("Goodbye!")
+                    elif "bye" in command or "exit" in command or "stop" in command:
+                        speak("Goodbye Sir ji!")
                         break
                     else:
                         speak("I'm sorry, I didn't understand that.")
